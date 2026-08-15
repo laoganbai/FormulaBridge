@@ -1,0 +1,16 @@
+{
+  "name": "formula-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local AI formula parser with editable Word export",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "desktop": "python desktop.py",
+    "build:desktop": "powershell -ExecutionPolicy Bypass -File .\\build-desktop.ps1"
+  },
+  "dependencies": {
+    "docx": "^9.6.1"
+  }
+}

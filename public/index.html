@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#17211c" />
+    <title>公式解析器 · Formula Workbench</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true">ƒx</div>
+          <div>
+            <p class="eyebrow">FORMULA WORKBENCH</p>
+            <h1>公式解析器</h1>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="button button-quiet" id="loadSample" type="button" title="载入示例内容">
+            <span class="button-symbol" aria-hidden="true">✦</span> 示例
+          </button>
+          <button class="button button-primary" id="exportButton" type="button" title="导出为 Word 文档">
+            <span class="button-symbol" aria-hidden="true">↓</span> 导出 Word
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="status-strip" aria-label="解析状态">
+          <div class="status-copy">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="statusText">等待输入</span>
+          </div>
+          <div class="status-metrics">
+            <span><strong id="formulaCount">0</strong> 公式</span>
+            <span><strong id="textCount">0</strong> 文本块</span>
+            <span><strong id="codeCount">0</strong> 代码块</span>
+          </div>
+        </section>
+
+        <section class="workspace-section input-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">01 / INPUT</p>
+              <h2>粘贴 AI 输出</h2>
+            </div>
+            <div class="section-heading-actions">
+              <label class="button button-outline" for="fileInput" title="导入文本或 Markdown 文件">
+                <span class="button-symbol" aria-hidden="true">↥</span> 导入文件
+              </label>
+              <input id="fileInput" type="file" accept=".txt,.md,.markdown,.tex,.html,.htm" hidden />
+              <button class="icon-button" id="clearButton" type="button" title="清空输入" aria-label="清空输入">⌫</button>
+            </div>
+          </div>
+
+          <div class="input-grid">
+            <div class="editor-panel">
+              <div class="panel-bar">
+                <span class="panel-title"><span class="panel-led" aria-hidden="true"></span> SOURCE_BUFFER</span>
+                <span class="char-count" id="charCount">0 字符</span>
+              </div>
+              <textarea id="sourceInput" spellcheck="false" placeholder="在这里粘贴 LaTeX、MathML、Unicode 公式，或包含公式的 AI 回答……"></textarea>
+              <div class="editor-foot">
+                <span>支持 `$$...$$`、`\\(...\\)`、MathML、代码围栏</span>
+                <span class="keyboard-hint"><kbd>Ctrl</kbd><span>+</span><kbd>Enter</kbd> 解析</span>
+              </div>
+            </div>
+
+            <aside class="settings-panel" aria-label="文档设置">
+              <div class="field-group">
+                <div class="field-label">解析策略</div>
+                <div class="segmented-control" role="group" aria-label="解析策略">
+                  <button class="segment active" type="button" data-mode="auto">自动识别</button>
+                  <button class="segment" type="button" data-mode="formula-only">仅公式</button>
+                  <button class="segment" type="button" data-mode="raw">原始文本</button>
+                </div>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="titleInput">文档标题</label>
+                <input class="text-input" id="titleInput" type="text" value="AI 公式解析结果" maxlength="80" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="fileNameInput">导出文件名</label>
+                <div class="file-name-input">
+                  <input class="text-input" id="fileNameInput" type="text" value="公式解析结果" maxlength="80" />
+                  <span>.docx</span>
+                </div>
+              </div>
+              <label class="check-row">
+                <input id="includeSource" type="checkbox" checked />
+                <span class="fake-check" aria-hidden="true">✓</span>
+                <span>保留公式源代码</span>
+              </label>
+              <div class="settings-note">
+                <span class="note-mark" aria-hidden="true">i</span>
+                <span>导出的公式会写入 Word 数学对象，打开后可继续编辑。</span>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="workspace-section preview-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-index">02 / PREVIEW</p>
+              <h2>解析预览</h2>
+            </div>
+            <div class="preview-tools">
+              <span class="zoom-label" id="zoomLabel">100%</span>
+              <button class="icon-button" id="zoomOut" type="button" title="缩小公式" aria-label="缩小公式">−</button>
+              <button class="icon-button" id="zoomReset" type="button" title="重置公式大小" aria-label="重置公式大小">1:1</button>
+              <button class="icon-button" id="zoomIn" type="button" title="放大公式" aria-label="放大公式">＋</button>
+            </div>
+          </div>
+
+          <div class="preview-grid">
+            <div class="document-stage">
+              <div class="stage-ruler"><span>PARSED DOCUMENT</span><span id="selectionHint">未选择公式</span></div>
+              <article class="document-paper" id="previewDocument" aria-live="polite">
+                <div class="empty-state">
+                  <div class="empty-glyph" aria-hidden="true">∑</div>
+                  <h3>还没有解析内容</h3>
+                  <p>输入或载入一段内容后，预览会显示在这里。</p>
+                </div>
+              </article>
+            </div>
+
+            <aside class="inspector-panel" aria-label="公式检查器">
+              <div class="inspector-header">
+                <div>
+                  <p class="section-index">03 / INSPECTOR</p>
+                  <h3>公式检查器</h3>
+                </div>
+                <span class="inspector-status" id="inspectorStatus">IDLE</span>
+              </div>
+              <div class="inspector-empty" id="inspectorEmpty">
+                <span class="inspector-icon" aria-hidden="true">⌁</span>
+                <p>点击预览中的公式查看源代码</p>
+              </div>
+              <div class="inspector-content" id="inspectorContent" hidden>
+                <div class="inspector-meta">
+                  <span class="format-badge" id="inspectorFormat">LATEX</span>
+                  <span id="inspectorNumber">FORMULA 01</span>
+                </div>
+                <textarea id="inspectorSource" spellcheck="false" readonly></textarea>
+                <button class="button button-outline full-button" id="copySource" type="button">
+                  <span class="button-symbol" aria-hidden="true">▣</span> 复制源代码
+                </button>
+              </div>
+              <div class="inspector-footer"><span class="live-dot" aria-hidden="true"></span> PARSER READY</div>
+            </aside>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <span>LOCAL ONLY</span>
+        <span>FORMULA WORKBENCH <span class="footer-divider">/</span> v0.1</span>
+      </footer>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
