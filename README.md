@@ -16,7 +16,7 @@ FormulaBridge 是一个面向个人使用的本地公式解析工具。它可以
 
 ## 直接使用 Windows 版本
 
-进入 `outputs` 文件夹，双击：
+双击：
 
 ```text
 FormulaWorkbench.exe
