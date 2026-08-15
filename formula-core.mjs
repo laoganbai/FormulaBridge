@@ -137,6 +137,17 @@ const TEXT_COMMANDS = new Set([
   "operatorname",
 ]);
 
+const FORMAT_COMMANDS = new Set([
+  "displaystyle",
+  "textstyle",
+  "scriptstyle",
+  "scriptscriptstyle",
+  "limits",
+  "nolimits",
+  "nonumber",
+  "notag",
+]);
+
 const ENVIRONMENTS = new Set([
   "matrix",
   "pmatrix",
@@ -160,6 +171,9 @@ const FORMULA_SIGNAL = /\\[a-zA-Z]+|(?:[A-Za-z0-9)\]])\s*[\^_]\s*(?:\{[^}]+\}|[A
 export function normalizeFormulaSource(source) {
   return String(source ?? "")
     .replace(/\r/g, "")
+    // AI responses sometimes contain JSON-escaped commands such as \\frac.
+    // Collapse only repeated slashes before command names so matrix row breaks remain intact.
+    .replace(/\\{2,}(?=[A-Za-z])/g, "\\")
     .replace(/^\s*```(?:latex|tex|math|mathml)?\s*/i, "")
     .replace(/\s*```\s*$/i, "")
     .replace(/^\s*(?:\\\[|\\\(|\$\$|\$)/, "")
@@ -350,6 +364,7 @@ export function parseLatexToAst(source) {
       if (cursor < input.length) cursor += 1;
       return null;
     }
+    if (FORMAT_COMMANDS.has(command)) return text("");
     if (command === "frac" || command === "dfrac" || command === "tfrac") {
       const numerator = parseGroup();
       const denominator = parseGroup();
